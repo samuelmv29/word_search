@@ -1,0 +1,798 @@
+
+<head>
+    <title>TWSG Lobby</title>
+    <div>
+</head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        
+        #instructionDiv {
+            margin-bottom: 20px;
+        }
+        #Game_states input[type="radio"] {
+            margin-right: 10px;
+        }
+        #Game_states label {
+            margin-right: 20px;
+        }
+        #Lobby input[type="radio"] {
+            margin-right: 10px;
+        }
+        #Lobby label {
+            margin-right: 20px;
+        }
+        #waiting-area-2,
+        #waiting-area-3,
+        #waiting-area-4 {
+            margin-bottom: 20px;
+        }
+        #Leader_board1,
+        #Leader_board2,
+        #PlayersAndWords_table,
+        #chat_messages,
+        #Grid {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        #Leader_board1 th,
+        #Leader_board2 th,
+        #PlayersAndWords_table th,
+        #chat_messages th,
+        #Grid th,
+        #Leader_board1 td,
+        #Leader_board2 td,
+        #PlayersAndWords_table td,
+        #chat_messages td,
+        #Grid td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #Leader_board1 tr:nth-child(even),
+        #Leader_board2 tr:nth-child(even),
+        #PlayersAndWords_table tr:nth-child(even),
+        #chat_messages tr:nth-child(even),
+
+        #chat {
+            margin-top: 20px;
+        }
+        #chat-input {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #chat-send {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #chat-send:hover {
+            background-color: #45a049;
+        }
+        #timer {
+			border: 2px solid #4CAF50;
+			border-radius: 5px;
+			background-color: #f2f2f2;
+			color: #4CAF50;
+			font-size: 24px;
+			font-weight: bold;
+			padding: 10px;
+			text-align: center;
+			width: 100px;
+			height: 40px;
+			margin-left: 20px;
+			margin-right: 20px;
+		}
+
+    </style>
+    
+<div id = "commit">Commit hash: </div>
+<div id="Basic_info">
+    <h1>TWSG Lobby</h1>
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" placeholder="Enter your username">
+    
+    <br><br>
+    <div id="Game states">
+        <label for="game-type">Select Game Type:</label>
+        <input type="radio" id="game-type-2" name="game_type" value="2" checked>
+        <label for="game_type_2">2 Players</label>
+        <input type="radio" id="game-type-3" name="game_type" value="3">
+        <label for="game_type_3">3 Players</label>
+        <input type="radio" id="game-type-4" name="game_type" value="4">
+        <label for="game_type_4">4 Players</label>
+    
+        <br><br>
+        <input type="button" id="enter_Game" name="Join" onclick="join()" value="Join">
+    </div>
+</div>
+
+<div id="Lobby" style="display: none;">
+    <br><br>
+    <label for="ready">Select status:</label>
+	<input type="radio" id="ready" name="game_status" value="ready" onclick = "update()" unchecked>
+	<label for="ready">Ready to play!</label>
+
+	<input type="radio" id="not_ready" name="game_status" value="not_ready" onclick = "update()" checked> 
+	<label for="not_ready">Not ready to play yet!</label>
+
+    
+    <br><br>
+    <div id="waiting-area-2">
+        <h2>Waiting for 2 players</h2>
+        <label id="Game2_waiting"></label>
+    </div>
+    <br><br>
+    
+    <div id="waiting-area-3">
+        <h2>Waiting for 3 players</h2>
+        <br>
+        <label id="Game3_waiting"></label>
+    </div>
+    <br><br>
+    
+    <div id="waiting-area-4">
+        <h2>Waiting for 4 players</h2>
+        <label id="Game4_waiting"></label>
+    </div>
+    <br><br>
+
+    <h2>Leaderboard</h2>
+	<table id="Leader_board1">
+		<tr>
+			<th>Username</th>
+			<th>Points</th>
+		</tr>
+	</table>
+    
+    <br>
+    
+    <h2>Chat</h2>
+    <div>
+        <table id="chat_messages">
+		</table>
+    </div>
+	<form id="chat">
+		<input type="text" id="chat-input" name="chat-input" placeholder="Enter your message">
+		<button type="button" id="chat-send" onclick="sendMessage()">Send</button>
+	</form>
+</div>
+
+<div id="Game" style="display: none;">
+    <div id="PlayersAndWords" style="width: 200px; order: -1;">
+        <h2>Players and Words</h2>
+        <table id="PlayersAndWords_table">
+        </table>
+    </div>
+    
+	<div id = "table" style="order: 0;">
+		<h1>Game</h1>
+
+		<table id="Grid">
+
+		</table>
+	</div>
+
+    <div id="Leaderboard" style="width: 200px; order: 1;">
+        <h2>Leaderboard</h2>
+		<table id="Leader_board2">
+			<tr>
+				<th>Username</th>
+				<th>Points</th>
+			</tr>
+		</table>
+    </div>
+    <div id="timer">5:00</div>
+    
+    <div id = "ValidWords_list" style="width: 200px;">
+    	<h2>List of valid Words</h2>
+    </div>
+</div>
+
+<div id = "Summary" class="popup" style="display: none;">
+	
+</div>	
+
+
+
+<script>
+
+//UserEvent defined
+	class UserEvent 
+	{
+		constructor() 
+		{
+			this.GameType = 0;
+			this.Handle = "";
+			this.ready = -1;
+			this.game = null;
+			this.Uid = 0;
+			this.color = "";
+			this.letters = [];
+		}
+	}
+
+
+//Coordinate: row, column representing indexes of the letters	
+	class Coordinate
+	{
+		constructor(row,col)
+		{
+			this.row = row;
+			this.col = col;
+		}
+	}
+	
+// Represents the leaderboard
+	class Leaderboard
+	{
+		constructor()
+		{
+			this.LB = null;
+		}
+	}
+
+// Represents a message in the chatbox
+	class Message
+	{
+		constructor(handle, msg)
+		{
+			this.Handle = handle;
+			this.Message = msg;
+		}
+	}
+
+//Represents summary	
+	class Summary
+	{
+		constructor()
+		{
+			this.Summary_list = null;
+		}
+	}	
+   	
+	var userid = -1; //Unique to each user
+	
+    var connection = null;
+    var serverUrl = "ws://" + window.location.hostname + ":9122";
+   	
+   	var username = null; //Unique to each user
+   	
+   	var gametype = null; //Cant be changed after selected
+   	var ready = -1;
+   	
+
+	
+	var Game = null; //By default user isnt in a game
+	
+	var no_clicks = 0; //No. of clicks done by user 
+	var selected_letters = []; //The letters clicked on and letters between those two selected letters
+	
+	var sent_status = 0;
+	var selected_word = null; 
+	var button = null;
+	var number = 1;
+	var array_list = null;
+	var timerInterval;
+	var state_timer = false;
+	var words = "";
+	var grid_test = null;
+    var times = 0;
+	
+	var leaderboard_list = [];
+	var Player_table = document.getElementById("PlayersAndWords");
+	var buttonTable = document.getElementById("Grid");
+	
+	
+    connection = new WebSocket(serverUrl);
+
+    connection.onopen = function (evt) 
+    {
+        console.log("open");
+    }
+    
+    connection.onclose = function (evt) 
+    {
+        console.log("close");
+    }   
+
+	connection.onmessage = function(event) 
+	{
+		//Store the data
+		var receivedData = event.data;
+		console.log(receivedData);
+		
+		//Assign each server to a userid
+		if (!isNaN(receivedData)) 
+		{	
+			if (times === 0)
+			{
+				console.log("entered empty");
+		    	userid = parseInt(receivedData);
+		    	times+=1;
+        	}
+        	else if (times === 1)
+        	{
+        		grid_test = parseInt(receivedData);
+        		times += 1;
+        		create_grid();
+        	}
+        	
+    	}
+    	else if (times === 2)
+    	{
+    		var commit = JSON.parse(event.data);
+    		document.getElementById("commit").innerHTML = "Commit hash: "+commit;
+		document.title = commit;
+    		times+=1;
+    	}
+    	else if (JSON.parse(event.data)==="approved")
+    	{
+    		sent_status = 1;
+    		join();
+    	}
+    	else if (JSON.parse(event.data)==="disapproved")
+    	{
+    		sent_status = -1;
+    		join();
+    	}
+    	//Checks if it is a waiting list
+    	else if (Array.isArray(JSON.parse(event.data)))
+    	{
+			console.log("Entered array");
+			//Remove lobby and show the game
+			//document.getElementById("Lobby").style.display = "block";
+			//document.getElementById("Game").style.display = "none";
+    		var waiting_list = "";
+    		array_list = JSON.parse(event.data);
+    		//Add the people to waiting list
+			for (var j = 1; j < array_list.length; j++)
+			{				
+				waiting_list+=array_list[j] + " ";
+			}
+			
+			//Display waiting list
+			if (array_list[0] == "2")
+			{
+				document.getElementById("Game2_waiting").innerHTML = waiting_list;
+			}
+			
+			else if (array_list[0] == "3")
+			{
+				document.getElementById("Game3_waiting").innerHTML = waiting_list;
+			}
+			else
+			{
+				document.getElementById("Game4_waiting").innerHTML = waiting_list;
+			}
+    	}
+		// Populate chat
+		else if (receivedData.includes("messages"))
+		{
+			console.log("Handling several messages...");
+			chatevent = JSON.parse(event.data);
+			
+			for (var i = 0; i < chatevent.messages.length; i++)
+			{
+				var row = chat_messages.insertRow();
+				var info = row.insertCell();
+				info.innerHTML = chatevent.messages[i].Handle + ": " + chatevent.messages[i].Message;
+			}
+		}
+    	// Get chat event
+		else if (receivedData.includes("Message"))
+		{
+			console.log("Handling one message...");
+			chatevent = JSON.parse(event.data);
+
+			var row = chat_messages.insertRow();
+			var info = row.insertCell();
+			info.innerHTML = chatevent.Handle + ": " + chatevent.Message;
+		}
+    	//Get User events
+    	else if (receivedData.includes("Handle"))
+    	{
+    		//Get what was sent into userevent
+    		userevent = JSON.parse(event.data);
+    		
+    		//Check if it is in a game and if this server has this userid
+			if ((userevent.ready === 0) && (userevent.game.ID.includes(username)))
+			{
+				console.log(userevent.game.ID);
+				//Remove lobby and show the game
+				console.log("I am removing lobby and showing game");
+				document.getElementById("Lobby").style.display = "none";
+				document.getElementById("Game").style.display = "flex";
+				
+				if (state_timer === false)
+				{
+					startGameTimer();
+					state_timer = true;
+				}
+				Game = userevent.game; 
+				
+				//Assign the list of valid words in the game below
+				ValidWords_list.innerHTML = "";
+				
+				for (var i = 0; i < userevent.game.valid_words.length; i++) 
+				{
+					words+=userevent.game.valid_words[i];
+					words+= " <br>";
+				}	
+				ValidWords_list.innerHTML = words;			
+				words = "";
+				
+				//Assign the grid with each letter
+				var number = 1;
+				for (var i = 0; i < grid_test; i++) 
+				{
+					for (var k = 0; k < grid_test; k++) 
+					{
+						var button = document.getElementById(number);
+						
+						button.textContent = userevent.game.grid[i][k];
+						number++;
+					}
+				}
+
+				//Go through the letters to highlight if it is there
+				for (var i = 0; i < userevent.letters.length; i++) 
+				{									
+					var buttonId = userevent.letters[i].row * grid_test + userevent.letters[i].col;
+					button = document.getElementById(buttonId);
+					button.style.backgroundColor = userevent.color;
+				}
+				
+				
+				PlayersAndWords_table.innerHTML = "";
+				for (var i = 0; i<userevent.game.ID.length; i++)
+				{		
+					var row = PlayersAndWords_table.insertRow();
+					var info = row.insertCell(0);	
+					info.textContent = userevent.game.ID[i];
+						
+					for (var j = 0; j < userevent.game.identified_words.length; j++)
+					{
+						if (parseInt(userevent.game.identified_words[j][0]) === i)
+						{
+							row = PlayersAndWords_table.insertRow();
+							info = row.insertCell(0);
+							info.textContent = userevent.game.identified_words[j].substr(1);							
+						}
+																	
+					}
+					
+					//Adds an extra empty line between players just to make it look good
+					row = PlayersAndWords_table.insertRow();
+					info = row.insertCell(0);
+					info.textContent = "";
+				}
+			}		   		
+    	}
+    	else if (receivedData.includes("Summary_list"))
+    	{
+    		summary = JSON.parse(event.data);
+ 			for (var key in summary.Summary_list) 
+			{
+				if (key === username)
+				{
+					
+					//document.getElementById('Summary')
+					var summaryDiv = document.getElementById('Summary');
+
+
+					summaryDiv.textContent = "You " + summary.Summary_list[key];
+					
+					   		
+					var button1 = document.createElement("button");
+					button1.textContent = "Okay";
+					button1.id = "OKAY";
+					button1.addEventListener('click', okay);
+					summaryDiv.appendChild(button1);
+					
+					button1.style.display = "block";
+					button1.style.marginTop = "20px";
+					button1.style.fontSize = "20px";			
+											
+					summaryDiv.style.display = "block";
+					summaryDiv.style.position = "absolute";
+					summaryDiv.style.zIndex = "999";
+					summaryDiv.style.top = "50%";
+					summaryDiv.style.left = "50%";
+					summaryDiv.style.transform = "translate(-50%, -50%)";
+					summaryDiv.style.backgroundColor = "rgba(255, 255, 255, 0.9)";
+					summaryDiv.style.width = "800px"; // Adjust the width as needed
+					summaryDiv.style.height = "400px"; // Adjust the height as needed
+					summaryDiv.style.padding = "20px"; // Add padding to center the content
+					summaryDiv.style.textAlign = "center"; // Center the text horizontally
+					summaryDiv.style.borderRadius = "5px";
+					summaryDiv.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.3)";
+					summaryDiv.style.fontSize = "30px";
+				}
+			}
+    	}
+		else
+		{
+			var sent_LB = JSON.parse(event.data);
+			console.log("I received leaderboard now i have to check it");
+			console.log(sent_LB);
+			var LeaderBoardTable1 = document.getElementById("Leader_board1");
+			var LeaderBoardTable2 = document.getElementById("Leader_board2");
+
+			// Clear existing rows
+			LeaderBoardTable1.innerHTML = "";
+			LeaderBoardTable2.innerHTML = "";
+		
+
+			for (var key in sent_LB.names) 
+			{
+
+				var row1 = LeaderBoardTable1.insertRow();
+				var row2 = LeaderBoardTable2.insertRow();
+				var cell11 = row1.insertCell(0);
+				var cell12 = row2.insertCell(0);
+				var cell21 = row1.insertCell(1);
+				var cell22 = row2.insertCell(1);
+				
+				cell11.textContent = sent_LB.names[key];
+				cell12.textContent = sent_LB.names[key];
+				cell21.textContent = sent_LB.scores[key];
+				cell22.textContent = sent_LB.scores[key];
+				
+    		}
+		}
+		
+
+    }
+		
+
+    
+	function update() {
+		var radioButton = document.getElementById("ready");
+
+		console.log(radioButton);
+
+		if (radioButton.checked) {
+		    U = new UserEvent();
+		    U.Handle = username;
+		    U.GameType = gametype;
+		    U.ready = 1;
+
+		    // Clear the color of all buttons
+		    for (var i = 1; i <= 400; i++) {
+		        var button = document.getElementById(i);
+		        if (button) {
+		            button.style.backgroundColor = "transparent";
+		        }
+		    }
+
+		    state_timer = false;
+		} else {
+		    U = new UserEvent();
+		    U.Handle = username;
+		    U.GameType = gametype;
+		    U.ready = -1;
+		}
+
+		connection.send(JSON.stringify(U));
+		console.log(JSON.stringify(U));
+	}
+
+	
+    function join()
+    {
+        username = document.getElementById("username").value;
+        if (username.trim() !== "")
+        {
+        	
+        
+		    if (sent_status === 0)
+		    {
+				U = new UserEvent();
+				U.Handle = username;
+				U.ready = -2;
+	    
+		    	connection.send(JSON.stringify(U));
+		    }
+		    else if (sent_status === 1)
+		    {
+		    
+		    
+				var gameTypeRadios = document.getElementsByName("game_type");
+				
+				
+				for (var i = 0; i < gameTypeRadios.length; i++) 
+				{
+					if (gameTypeRadios[i].checked)
+					{
+						gametype = gameTypeRadios[i].value;
+					}
+				}
+				
+				U = new UserEvent();
+				U.Handle = username;
+				U.GameType = gametype;
+				U.ready = -1;
+				U.game = null;
+				U.Uid = userid;
+				U.letters = [];
+				
+				connection.send(JSON.stringify(U));
+				console.log(JSON.stringify(U));         	
+									
+				console.log("I am showing the lobby and hiding basic info");
+			   // Show the lobby form
+			    document.getElementById("Lobby").style.display = "block";
+			    // Hide the basic info form
+			    document.getElementById("Basic_info").style.display = "none";
+				    
+				
+		    }
+		    else
+		    {
+		    	alert("Username already taken.");
+		    	sent_status = 0;
+		    }
+        }
+        
+        else 
+        {
+            alert("Please enter a username which is max 10 characters long before joining.");
+        }
+        
+    }
+    
+	function button_click(row, column) 
+	{
+		U = new UserEvent();
+		U.Handle = username;
+		U.GameType = gametype;
+		U.ready = 0;
+		U.game = Game;
+		U.Uid = userid;
+		
+
+
+		selected_letters.push({ row: row, column: column });
+		no_clicks += 1;
+		console.log("no_clicks: "+no_clicks);
+
+		
+		if (no_clicks === 1)
+		{
+			var buttonId = row * grid_test + column;
+			button = document.getElementById(buttonId);
+			button.style.backgroundColor = "#f2f2f2";			
+		}
+		if (no_clicks === 2) 
+		{
+			var coord1 = new Coordinate(selected_letters[0].row, selected_letters[0].column);
+			var coord2 = new Coordinate(selected_letters[1].row, selected_letters[1].column);
+			U.letters.push(coord1);
+			U.letters.push(coord2);
+
+		    connection.send(JSON.stringify(U));
+		    console.log(JSON.stringify(U));
+		    no_clicks = 0;
+		    selected_letters = [];
+    	}
+	    
+			
+	}
+
+function okay()
+{
+	console.log("I am showing lobby and hiding game and summary");
+	document.getElementById("Lobby").style.display = "block";
+	document.getElementById("Game").style.display = "none";
+	document.getElementById("Summary").style.display = "none";
+
+	var checkbox = document.getElementById('ready');
+	checkbox.checked = false;
+		
+   	var checkbox = document.getElementById('not_ready');
+	checkbox.checked = true;
+	
+	U = new UserEvent();
+	U.Handle = username;
+	U.ready = 2;
+
+	connection.send(JSON.stringify(U));
+	
+	
+}
+
+
+
+function startTimer(duration, display) 
+{
+    var timer = duration, minutes, seconds;
+    timerInterval = setInterval(function () 
+    {
+        minutes = parseInt(timer / 60, 10);
+        seconds = parseInt(timer % 60, 10);
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        display.textContent = minutes + ":" + seconds;
+
+        if (--timer < 0) 
+        {
+            clearInterval(timerInterval);
+            // Perform actions when the timer reaches zero
+            //alert("Time's up!");
+			U = new UserEvent();
+			U.Handle = username;
+			U.GameType = gametype;
+			U.ready = 0;
+			U.game = Game;
+			U.Uid = userid;
+			U.letters.length = 0;
+			U.timer_done = true;
+			connection.send(JSON.stringify(U));           
+        }
+    }, 1000);
+}
+
+function startGameTimer() 
+{
+    var fiveMinutes = 60 * 5, // 3 minutes in seconds
+        display = document.querySelector('#timer');
+    startTimer(fiveMinutes, display);
+}
+
+function sendMessage()
+{
+	username = document.getElementById("username").value;
+	msg = document.getElementById("chat-input").value;
+	M = new Message(username, msg);
+
+	console.log(JSON.stringify(M));
+	connection.send(JSON.stringify(M));
+	document.getElementById("chat-input").value = "";
+}
+
+function create_grid()
+{
+
+	for (var i = 0; i < grid_test; i++) 
+	{
+		
+		var row = buttonTable.insertRow();
+		for (var j = 1; j < (grid_test+1); j++)
+		{
+			var cell = row.insertCell();
+			var button = document.createElement("button");
+			button.textContent = "?";
+			button.id = number;
+			
+			button.style.border = "none";
+			button.style.backgroundColor = "transparent";
+			button.style.boxShadow = "none";
+			button.style.margin = "0";
+			button.style.outline = "none";
+			button.style.cursor = "pointer";
+			button.style.fontSize = "20px";
+		    button.style.width = "20px";
+		    button.style.height = "20px";			
+			button.style.lineHeight = "0";
+		    (function(i, j) {
+		        button.addEventListener("click", function() {
+		            button_click(i, j);
+		        });
+		    })(i, j); 
+					
+			cell.appendChild(button);
+			number+=1;	
+		}
+	}
+}
+    
+</script>
